@@ -44,6 +44,14 @@ builtin source ${ZPLGM[BIN_DIR]}"/zplugin-side.zsh"
     if [[ "$site" = *"releases" ]]; then
         local url="$site/${ZPLG_ICE[ver]}"
         local -a list list2
+        local -A matchstr
+        matchstr=(
+          "i386"    "(386|686)"
+          "i686"    "(386|686)"
+          "x86_64"  "(x86_64|amd64)"
+          "amd64"   "(x86_64|amd64)"
+          "aarch64" "aarch64"
+        )
 
         list=( ${(@f)"$( { -zplg-download-file-stdout $url || -zplg-download-file-stdout $url 1; } 2>/dev/null | \
                       command grep -o 'href=./'$remote_url_path'/releases/download/[^"]\+')"} )
@@ -52,7 +60,7 @@ builtin source ${ZPLGM[BIN_DIR]}"/zplugin-side.zsh"
         [[ -n "${ZPLG_ICE[bpick]}" ]] && list=( "${(M)list[@]:#(#i)${~ZPLG_ICE[bpick]}}" )
 
         [[ ${#list} -gt 1 ]] && {
-            list2=( "${(M)list[@]:#(#i)*${CPUTYPE#(#i)(i|amd)}*}" )
+            list2=( "${(M)list[@]:#(#i)*${~matchstr[${CPUTYPE#(#i)}]:-${CPUTYPE#(#i)(x86_|i|amd)}}*}" )
             [[ ${#list2} -gt 0 ]] && list=( "${list2[@]}" )
         }
 
